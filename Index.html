@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Plataforma de Estudio - Cargos Directivos</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- CABECERA COMPACTA -->
+    <header class="header-bar">
+      <div class="brand-area">
+        <div class="header-title">Plataforma Directiva</div>
+        <span class="security-tag">🔒 1 Dispositivo por Usuario</span>
+      </div>
+      <div class="header-actions">
+        <button id="btn-org-abort" class="btn-danger-sm" style="display: none;" onclick="finalizarTodoConfirmar()">
+          ⏹ Finalizar Sala
+        </button>
+        <div id="user-badge" class="user-badge" style="display: none;"></div>
+        <button id="btn-logout" class="btn-logout-sm" style="display: none;" onclick="cerrarSesion()">
+          Salir
+        </button>
+      </div>
+    </header>
+
+    <!-- SELECTOR DE MODO (SE OCULTA DURANTE EL QUIZ PARA GANAR PANTALLA) -->
+    <nav id="mode-switcher-bar" class="mode-switcher-bar" style="display: none;">
+      <button id="tab-grupal" class="mode-tab-btn active" onclick="cambiarModoApp('GRUPAL')">
+        👥 Sala Grupal
+      </button>
+      <button id="tab-individual" class="mode-tab-btn" onclick="cambiarModoApp('INDIVIDUAL')">
+        👤 Estudio Individual
+      </button>
+    </nav>
+
+    <!-- PANTALLA 0: INICIO DE SESIÓN -->
+    <section id="login-screen" style="max-width: 440px; margin: 10px auto;">
+      <div class="step-card">
+        <div class="step-title">Acceso a la Plataforma</div>
+        <p class="helper-text">Ingresa tus credenciales autorizadas para unirte a la sala o continuar tu preparación.</p>
+        <div class="form-group">
+          <label for="inp-correo">Correo Electrónico Autorizado</label>
+          <input type="email" id="inp-correo" class="form-input" placeholder="ejemplo@gmail.com" autocomplete="email">
+        </div>
+        <div class="form-group">
+          <label for="inp-pass">Contraseña Asignada</label>
+          <input type="password" id="inp-pass" class="form-input" placeholder="Ingresa tu clave" autocomplete="current-password">
+        </div>
+        <button id="btn-login" class="btn-main" onclick="ingresarSala()">Ingresar a la Plataforma</button>
+        <div id="login-error" class="error-msg"></div>
+      </div>
+    </section>
+
+    <!-- ========================================================= -->
+    <!-- CONTENEDOR MODO 1: SALA DE ESTUDIO GRUPAL                 -->
+    <!-- ========================================================= -->
+    <main id="group-mode-container" style="display: none;">
+      <!-- PANTALLA 1: LOBBY / SALA DE ESPERA Y CONFIGURACIÓN -->
+      <div id="lobby-screen" style="display: none;">
+        <div class="step-card">
+          <div class="step-title">
+            Asistencia en Vivo (<span id="lbl-conectados-count">0</span> de <span id="lbl-max-count">0</span> habilitados)
+          </div>
+          <p class="helper-text">
+            Cupo ajustado según <code>Config_Usuarios</code>. Si un compañero cambia de equipo, usa <strong>🔓 Liberar</strong>.
+          </p>
+          <div id="lobby-participants" class="participants-list"></div>
+        </div>
+
+        <!-- PANEL EXCLUSIVO DEL ORGANIZADOR -->
+        <div id="organizer-panel" style="display: none;">
+          <div id="org-group-history-card" class="step-card" style="display: none;">
+            <div class="step-title">📌 Sesiones Grupales Guardadas (Continuar o Reforzar)</div>
+            <div id="org-group-history-list"></div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-title"><span class="step-number">1</span> Escoge el Documento para Nueva Sesión</div>
+            <div id="biblio-container" class="grid-buttons"></div>
+          </div>
+
+          <div class="step-card">
+            <div class="step-title"><span class="step-number">2</span> Parámetros de la Nueva Sesión Grupal</div>
+            
+            <div class="form-group">
+              <label for="inp-nombre-sesion-grupal">Nombre de esta Sesión Grupal</label>
+              <input type="text" id="inp-nombre-sesion-grupal" class="form-input" placeholder="Ej. Repaso Ley 070 - Grupo Directivos">
+            </div>
+
+            <div class="form-group">
+              <label>Enfoque de Estudio</label>
+              <div class="grid-buttons" id="mod-container">
+                <button class="select-btn active" onclick="setModalidad('Teorica', this)">Preguntas Teóricas</button>
+                <button class="select-btn" onclick="setModalidad('Caso_Directivo', this)">Casos Directivos</button>
+                <button class="select-btn" onclick="setModalidad('Todas', this)">Modo Mixto</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Orden de Preguntas</label>
+              <div class="grid-buttons" id="orden-container">
+                <button class="select-btn active" onclick="setOrden('Correlativo', this)">Correlativo (Por Página)</button>
+                <button class="select-btn" onclick="setOrden('Aleatorio', this)">Aleatorio</button>
+              </div>
+            </div>
+
+            <!-- RANGO CORRELATIVO MANUAL PARA EL ORGANIZADOR -->
+            <div id="grp-rango-box" class="form-group" style="background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 12px;">
+              <label style="color: var(--primary); margin-bottom: 8px;">📍 Rango correlativo manual (Opcional — Ej. continuar de la 21 a la 50)</label>
+              <div class="config-grid-2" style="margin-top: 0;">
+                <div>
+                  <label for="grp-desde-num" style="font-size: 0.78rem;">Desde la pregunta N°:</label>
+                  <input type="number" id="grp-desde-num" class="form-input" min="1" placeholder="Ej. 21 (vacío = 1)">
+                </div>
+                <div>
+                  <label for="grp-hasta-num" style="font-size: 0.78rem;">Hasta la pregunta N°:</label>
+                  <input type="number" id="grp-hasta-num" class="form-input" min="1" placeholder="Ej. 50 (vacío = final)">
+                </div>
+              </div>
+            </div>
+
+            <div class="config-grid-3">
+              <div class="form-group">
+                <label for="cmb-cantidad">Cantidad de Preguntas</label>
+                <select id="cmb-cantidad" class="form-select" onchange="toggleCantidadManualGrupal()">
+                  <option value="5">5 Preguntas</option>
+                  <option value="10" selected>10 Preguntas</option>
+                  <option value="15">15 Preguntas</option>
+                  <option value="20">20 Preguntas</option>
+                  <option value="50">50 Preguntas</option>
+                  <option value="9999">Todas las disponibles</option>
+                  <option value="MANUAL">✍️ Cantidad manual...</option>
+                </select>
+                <input type="number" id="inp-cantidad-manual-grupal" class="form-input" min="1" placeholder="Escribe cuántas (ej. 30)" style="display: none; margin-top: 8px;">
+              </div>
+
+              <div class="form-group">
+                <label for="cmb-tiempo-lectura">Tiempo Máximo Lectura</label>
+                <select id="cmb-tiempo-lectura" class="form-select">
+                  <option value="1">1 Minuto</option>
+                  <option value="2">2 Minutos</option>
+                  <option value="3">3 Minutos</option>
+                  <option value="5" selected>5 Minutos (Recomendado)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="cmb-tiempo-pregunta">Tiempo Máximo Respuesta</label>
+                <select id="cmb-tiempo-pregunta" class="form-select">
+                  <option value="1">1 Minuto</option>
+                  <option value="2" selected>2 Minutos</option>
+                  <option value="3">3 Minutos</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-iniciar-grupal" class="btn-main" onclick="iniciarSesionGrupal()" disabled>
+            Iniciar Nueva Sesión Grupal
+          </button>
+        </div>
+
+        <!-- MENSAJE DE ESPERA PARA PARTICIPANTES + HISTORIAL GRUPAL -->
+        <div id="participant-wait-panel" style="display: none;">
+          <div class="step-card" style="text-align: center;">
+            <h3 style="color: var(--primary); margin-bottom: 6px;">Esperando al Organizador...</h3>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+              Ya estás conectado en la sala. Tu pantalla cambiará automáticamente cuando inicie la sesión.
+            </p>
+          </div>
+          <div id="part-group-history-card" class="step-card" style="display: none;">
+            <div class="step-title">📋 Historial de Sesiones del Grupo</div>
+            <div id="part-group-history-list"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANTALLA 2: SESIÓN GRUPAL ACTIVA (VISTA ÚNICA) -->
+      <div id="active-session-screen" style="display: none;">
+        <div class="session-banner">
+          <span>Sesión: <strong id="lbl-nombre-sesion-activa"></strong></span>
+          <span id="lbl-doc-sesion-activa"></span>
+        </div>
+
+        <div class="quiz-dashboard">
+          <div class="dash-item">
+            <span class="dash-label">Pregunta</span>
+            <span class="dash-value" id="lbl-progreso">1 / 10</span>
+          </div>
+          <div class="dash-item">
+            <span class="dash-label">Puntaje</span>
+            <span class="dash-value score" id="lbl-mi-score">0 pts</span>
+          </div>
+          <div class="dash-item">
+            <span class="dash-label">Tiempo</span>
+            <span class="dash-value timer" id="lbl-timer">05:00</span>
+          </div>
+        </div>
+
+        <!-- SUB-VISTA A: AVISO EMERGENTE DE LECTURA PREVIA -->
+        <div id="phase-reading" style="display: none;">
+          <div class="reading-modal-box">
+            <span class="reading-badge">Fase 1 · Lectura en tus apuntes</span>
+            <div class="reading-ref-title" id="read-fuente"></div>
+            <div class="reading-pistas">
+              <strong>¿Qué debes revisar?:</strong> <span id="read-pistas"></span>
+            </div>
+            <button id="btn-listo-lectura" class="btn-main btn-success" onclick="confirmarLecturaLista()">
+              ✓ Ya terminé de leer, estoy listo
+            </button>
+          </div>
+
+          <div class="step-card">
+            <div class="step-title" style="font-size: 0.9rem;">Estado de lectura del grupo</div>
+            <div id="reading-status-list" class="participants-list"></div>
+            <div id="org-reading-controls" class="org-controls" style="display: none;">
+              <button class="btn-main btn-warning" onclick="enviarComandoOrg('FORZAR_PREGUNTA')">
+                Lanzar Pregunta Ahora (Saltar espera)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- SUB-VISTA B: PREGUNTA + ACORDEÓN + RESPUESTAS EN UNA SOLA PANTALLA -->
+        <div id="phase-question" style="display: none;">
+          <div class="question-title" id="lbl-pregunta"></div>
+
+          <details class="ref-accordion">
+            <summary class="ref-accordion-summary">
+              <span>📖 Ubicación en el texto y pistas</span>
+            </summary>
+            <div class="ref-accordion-body">
+              <div><strong>Referencia estudiada:</strong> <span id="lbl-fuente-sub"></span></div>
+              <div class="pistas-box"><strong>Pistas:</strong> <span id="lbl-pistas-sub"></span></div>
+            </div>
+          </details>
+
+          <div class="options-grid" id="options-container"></div>
+
+          <button id="btn-enviar-voto" class="btn-main" onclick="enviarRespuesta()" disabled>
+            Confirmar mi Respuesta
+          </button>
+
+          <div id="wait-others-msg" class="wait-banner" style="display: none;">
+            ✓ Respuesta registrada. Esperando a los demás participantes...
+          </div>
+
+          <details class="ref-accordion" style="margin-top: 10px; background: var(--surface-subtle); border-color: var(--border); border-left-color: #64748b;">
+            <summary class="ref-accordion-summary" style="color: var(--text-secondary);">
+              <span>👥 Ver progreso de respuestas en vivo</span>
+            </summary>
+            <div class="ref-accordion-body">
+              <div id="answering-status-list" class="participants-list"></div>
+              <div id="org-question-controls" class="org-controls" style="display: none;">
+                <button class="btn-main btn-warning" onclick="enviarComandoOrg('FORZAR_RESULTADOS')">
+                  Cerrar Votación y Mostrar Resultados
+                </button>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <!-- SUB-VISTA C: RESULTADOS DE LA RONDA -->
+        <div id="phase-round-results" style="display: none;">
+          <div class="question-title" id="res-ronda-pregunta"></div>
+          
+          <div class="feedback-box">
+            <strong>Respuesta Correcta: <span id="res-ronda-correcta"></span></strong><br>
+            <span id="res-ronda-explicacion"></span>
+          </div>
+
+          <div class="step-card">
+            <div class="step-title">Resultados de esta pregunta y Puntaje Acumulado</div>
+            <div class="table-responsive">
+              <table class="group-results-table">
+                <thead>
+                  <tr>
+                    <th>Participante</th>
+                    <th>Marcó</th>
+                    <th>Resultado</th>
+                    <th>Puntaje Total</th>
+                  </tr>
+                </thead>
+                <tbody id="tbody-round-results"></tbody>
+              </table>
+            </div>
+
+            <div id="org-next-controls" style="display: none;">
+              <button class="btn-main" onclick="enviarComandoOrg('SIGUIENTE_PREGUNTA')">
+                Lanzar Siguiente Referencia de Estudio →
+              </button>
+            </div>
+            <div id="part-next-wait" style="text-align: center; color: var(--text-muted); font-size: 0.88rem; display: none;">
+              Esperando a que el organizador lance la siguiente referencia de estudio...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PANTALLA 3: PODIO FINAL DE LA SESIÓN GRUPAL -->
+      <div id="final-screen" style="display: none;">
+        <div class="step-card" style="text-align: center;">
+          <h2 style="color: var(--primary); margin-bottom: 6px;">¡Estudio Grupal Finalizado!</h2>
+          <p style="color: var(--text-muted); margin-bottom: 16px;">Tabla de posiciones final acumulada</p>
+          
+          <div class="table-responsive">
+            <table class="group-results-table">
+              <thead>
+                <tr>
+                  <th>Posición</th>
+                  <th>Participante</th>
+                  <th>Puntaje Final</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-final-ranking"></tbody>
+            </table>
+          </div>
+
+          <div id="org-restart-controls" style="display: none; margin-top: 16px;">
+            <button class="btn-main" onclick="enviarComandoOrg('REINICIAR_SALA')">
+              Volver a la Sala Principal (Nueva Sesión)
+            </button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ========================================================= -->
+    <!-- CONTENEDOR MODO 2: ESTUDIO INDIVIDUAL (COLUMNA F = SI)    -->
+    <!-- ========================================================= -->
+    <section id="individual-mode-container" style="display: none;">
+      <div id="ind-setup-screen">
+        <div id="ind-history-card" class="step-card" style="display: none;">
+          <div class="step-title">📌 Tu Rastro de Estudio (Continuar o Reforzar Falladas)</div>
+          <div id="ind-history-list"></div>
+        </div>
+
+        <div class="step-card">
+          <div class="step-title">
+            <span class="step-number">1</span> Escoge el Documento a Estudiar
+          </div>
+          <div id="ind-biblio-container" class="grid-buttons"></div>
+        </div>
+
+        <div class="step-card" id="ind-step-config" style="opacity: 0.5; pointer-events: none;">
+          <div class="step-title">
+            <span class="step-number">2</span> Configura tu Sesión Individual
+          </div>
+
+          <div class="form-group">
+            <label>Enfoque de Estudio</label>
+            <div class="grid-buttons" id="ind-mod-container">
+              <button class="select-btn active" onclick="setIndModalidad('Teorica', this)">Preguntas Teóricas / Tácitas</button>
+              <button class="select-btn" onclick="setIndModalidad('Caso_Directivo', this)">Casos Directivos / Análisis</button>
+              <button class="select-btn" onclick="setIndModalidad('Todas', this)">Modo Mixto (Ambas)</button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Orden de Presentación</label>
+            <div class="grid-buttons" id="ind-orden-container">
+              <button class="select-btn active" onclick="setIndOrden('Correlativo', this)">Correlativo (Página por Página)</button>
+              <button class="select-btn" onclick="setIndOrden('Aleatorio', this)">Aleatorio (Mezclado)</button>
+            </div>
+          </div>
+
+          <!-- RANGO CORRELATIVO MANUAL PARA ESTUDIO INDIVIDUAL -->
+          <div id="ind-rango-box" class="form-group" style="background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 12px;">
+            <label style="color: var(--primary); margin-bottom: 8px;">📍 Rango correlativo manual (Opcional — Ej. continuar de la 21 a la 50)</label>
+            <div class="config-grid-2" style="margin-top: 0;">
+              <div>
+                <label for="ind-desde-num" style="font-size: 0.78rem;">Desde la pregunta N°:</label>
+                <input type="number" id="ind-desde-num" class="form-input" min="1" placeholder="Ej. 21 (vacío = 1)">
+              </div>
+              <div>
+                <label for="ind-hasta-num" style="font-size: 0.78rem;">Hasta la pregunta N°:</label>
+                <input type="number" id="ind-hasta-num" class="form-input" min="1" placeholder="Ej. 50 (vacío = final)">
+              </div>
+            </div>
+          </div>
+
+          <div class="config-grid-2">
+            <div class="form-group">
+              <label for="ind-cmb-cantidad">Cantidad de Preguntas</label>
+              <select id="ind-cmb-cantidad" class="form-select" onchange="toggleCantidadManualInd()">
+                <option value="5">5 Preguntas</option>
+                <option value="10" selected>10 Preguntas</option>
+                <option value="15">15 Preguntas</option>
+                <option value="20">20 Preguntas</option>
+                <option value="50">50 Preguntas</option>
+                <option value="9999">Todas las disponibles</option>
+                <option value="MANUAL">✍️ Cantidad manual...</option>
+              </select>
+              <input type="number" id="ind-inp-cantidad-manual" class="form-input" min="1" placeholder="Escribe cuántas (ej. 30)" style="display: none; margin-top: 8px;">
+            </div>
+
+            <div class="form-group">
+              <label for="ind-cmb-tiempo">Reloj / Tiempo Límite</label>
+              <select id="ind-cmb-tiempo" class="form-select">
+                <option value="0">Sin tiempo límite</option>
+                <option value="5">5 Minutos</option>
+                <option value="10">10 Minutos</option>
+                <option value="15">15 Minutos</option>
+                <option value="30">30 Minutos</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <button id="ind-btn-iniciar" class="btn-main" onclick="iniciarEstudioIndividual('NORMAL')" disabled>
+          Iniciar Evaluación Completa
+        </button>
+        <button id="ind-btn-rapidito" class="btn-main btn-rapidito" onclick="iniciarEstudioIndividual('RAPIDITO')" disabled>
+          ⚡ Modo Rapidito (5 Preguntas al Azar del Documento)
+        </button>
+      </div>
+
+      <div id="ind-loading-screen" style="display: none; text-align: center; padding: 48px 16px; color: var(--text-muted); font-weight: 700;">
+        Preparando tus preguntas y sincronizando tu historial...
+      </div>
+
+      <!-- PANTALLA DE PREGUNTA INDIVIDUAL (VISTA ÚNICA COMPACTA) -->
+      <div id="ind-quiz-screen" style="display: none;">
+        <div class="quiz-dashboard">
+          <div class="dash-item">
+            <span class="dash-label">Progreso</span>
+            <span class="dash-value" id="ind-lbl-progreso">1 / 10</span>
+          </div>
+          <div class="dash-item">
+            <span class="dash-label">Puntos</span>
+            <span class="dash-value score" id="ind-lbl-score">0</span>
+          </div>
+          <div class="dash-item">
+            <span class="dash-label">Tiempo</span>
+            <span class="dash-value timer" id="ind-lbl-timer">--:--</span>
+          </div>
+          <div class="dash-item">
+            <button class="btn-danger-sm" onclick="finalizarEstudioCuandoQuiera()">
+              ⏹ Finalizar
+            </button>
+          </div>
+        </div>
+
+        <div class="question-title" id="ind-lbl-pregunta"></div>
+
+        <!-- ACORDEÓN COLAPSABLE PARA UBICACIÓN EN EL TEXTO Y PISTAS -->
+        <details id="ind-ref-accordion" class="ref-accordion">
+          <summary class="ref-accordion-summary">
+            <span>📖 Ubicación en el texto y pistas</span>
+          </summary>
+          <div class="ref-accordion-body">
+            <div>
+              <strong>Fuente:</strong> <span id="ind-lbl-fuente-texto"></span>
+            </div>
+            <div class="pistas-box">
+              <strong>Pistas:</strong> <span id="ind-lbl-pistas"></span>
+            </div>
+          </div>
+        </details>
+
+        <div class="options-grid" id="ind-options-container"></div>
+
+        <div id="ind-feedback-box" class="feedback-box" style="display: none;">
+          <strong style="display: block; margin-bottom: 4px;">Fundamentación Técnica:</strong>
+          <span id="ind-lbl-explicacion"></span>
+        </div>
+
+        <button id="ind-btn-comprobar" class="btn-main" onclick="comprobarRespuestaInd()" disabled>Comprobar Respuesta</button>
+        <button id="ind-btn-siguiente" class="btn-main" onclick="siguientePreguntaInd()" style="display: none;">Siguiente Pregunta →</button>
+      </div>
+
+      <div id="ind-results-screen" style="display: none; text-align: center; padding: 14px 0;">
+        <h2 style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 6px;">¡Sesión Individual Finalizada!</h2>
+        <p id="ind-res-subtitulo" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 18px;"></p>
+        
+        <div class="results-score-circle">
+          <span class="results-score-num" id="ind-res-porcentaje">0%</span>
+          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">EFECTIVIDAD</span>
+        </div>
+
+        <div class="stats-summary-row">
+          <div class="stat-pill">
+            <span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">CORRECTAS</span>
+            <span style="font-size: 1.35rem; font-weight: 800; color: var(--success);" id="ind-res-correctas">0</span>
+          </div>
+          <div class="stat-pill">
+            <span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">INCORRECTAS</span>
+            <span style="font-size: 1.35rem; font-weight: 800; color: var(--danger);" id="ind-res-incorrectas">0</span>
+          </div>
+          <div class="stat-pill">
+            <span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">TIEMPO USADO</span>
+            <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);" id="ind-res-tiempo">00:00</span>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <button id="ind-btn-reforzar-ahora" class="btn-main btn-rapidito" style="display: none;" onclick="reforzarFalladasActuales()">
+            🎯 Reforzar Ahora las Preguntas Falladas
+          </button>
+          <button class="btn-main" onclick="reiniciarAppIndividual()">Volver al Inicio Individual</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
