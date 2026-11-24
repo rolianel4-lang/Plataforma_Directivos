@@ -245,11 +245,12 @@ async function finalizarActividadDesdeHistorial(tipo, idSesion, btnElement) {
 }
 
 // =========================================================
-// RENDERIZADO DE HISTORIALES
+// RENDERIZADO DE HISTORIALES EN ACORDEÓN
 // =========================================================
 function renderizarHistorialGrupal(lista) {
   const esOrg = usuarioActual && usuarioActual.rol === "ORGANIZADOR";
   const card = document.getElementById(esOrg ? 'org-group-history-card' : 'part-group-history-card');
+  const countSpan = document.getElementById(esOrg ? 'org-group-history-count' : 'part-group-history-count');
   const container = document.getElementById(esOrg ? 'org-group-history-list' : 'part-group-history-list');
 
   if (!lista || lista.length === 0) {
@@ -258,8 +259,11 @@ function renderizarHistorialGrupal(lista) {
   }
 
   card.style.display = 'block';
+  if (countSpan) countSpan.innerText = lista.length;
+
   container.innerHTML = lista.map(s => {
     const esInconclusa = (s.estado === "EN_CURSO" && s.indiceActual < s.totalPreguntas);
+    const mostrarRefuerzo = (s.cantidadFalladas > 0 && s.modalidad !== "REFUERZO");
     return `
       <div class="history-item ${esInconclusa ? 'in-progress' : ''}">
         <div>
@@ -272,7 +276,7 @@ function renderizarHistorialGrupal(lista) {
           <div class="history-actions">
             ${esInconclusa ? `<button class="btn-mini resume" onclick="retomarOReforzarGrupal('CONTINUAR_GRUPAL', '${s.idSesion}')">▶ Continuar (${s.indiceActual + 1}/${s.totalPreguntas})</button>` : ''}
             ${esInconclusa ? `<button class="btn-mini finish" onclick="finalizarActividadDesdeHistorial('GRUPAL', '${s.idSesion}', this)">✓ Finalizar actividad</button>` : ''}
-            ${s.cantidadFalladas > 0 ? `<button class="btn-mini reinforce" onclick="retomarOReforzarGrupal('REFUERZO_GRUPAL', '${s.idSesion}')">🎯 Reforzar Falladas (${s.cantidadFalladas})</button>` : ''}
+            ${mostrarRefuerzo ? `<button class="btn-mini reinforce" onclick="retomarOReforzarGrupal('REFUERZO_GRUPAL', '${s.idSesion}')">🎯 Reforzar Falladas (${s.cantidadFalladas})</button>` : ''}
           </div>
         ` : ''}
       </div>
@@ -282,6 +286,7 @@ function renderizarHistorialGrupal(lista) {
 
 function renderizarHistorialIndividual(lista) {
   const card = document.getElementById('ind-history-card');
+  const countSpan = document.getElementById('ind-history-count');
   const container = document.getElementById('ind-history-list');
 
   if (!lista || lista.length === 0) {
@@ -290,8 +295,11 @@ function renderizarHistorialIndividual(lista) {
   }
 
   card.style.display = 'block';
+  if (countSpan) countSpan.innerText = lista.length;
+
   container.innerHTML = lista.map(s => {
     const esInconclusa = (s.estado === "EN_CURSO" && s.indiceActual < s.totalPreguntas);
+    const mostrarRefuerzo = (s.cantidadFalladas > 0 && s.modalidad !== "REFUERZO");
     return `
       <div class="history-item ${esInconclusa ? 'in-progress' : ''}">
         <div>
@@ -303,7 +311,7 @@ function renderizarHistorialIndividual(lista) {
         <div class="history-actions">
           ${esInconclusa ? `<button class="btn-mini resume" onclick="retomarSesionInd('${s.idSesion}')">▶ Continuar donde dejé (${s.indiceActual + 1}/${s.totalPreguntas})</button>` : ''}
           ${esInconclusa ? `<button class="btn-mini finish" onclick="finalizarActividadDesdeHistorial('INDIVIDUAL', '${s.idSesion}', this)">✓ Finalizar actividad</button>` : ''}
-          ${s.cantidadFalladas > 0 ? `<button class="btn-mini reinforce" onclick="iniciarRefuerzoInd('${s.documento}', '${s.idSesion}')">🎯 Reforzar Falladas (${s.cantidadFalladas})</button>` : ''}
+          ${mostrarRefuerzo ? `<button class="btn-mini reinforce" onclick="iniciarRefuerzoInd('${s.documento}', '${s.idSesion}')">🎯 Reforzar Falladas (${s.cantidadFalladas})</button>` : ''}
         </div>
       </div>
     `;
