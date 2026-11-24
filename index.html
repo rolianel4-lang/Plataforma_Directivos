@@ -72,10 +72,15 @@
 
         <!-- PANEL EXCLUSIVO DEL ORGANIZADOR -->
         <div id="organizer-panel" style="display: none;">
-          <div id="org-group-history-card" class="step-card" style="display: none;">
-            <div class="step-title">📌 Sesiones Grupales Guardadas (Continuar o Reforzar)</div>
-            <div id="org-group-history-list"></div>
-          </div>
+          <!-- HISTORIAL GRUPAL EN ACORDEÓN COMPACTO -->
+          <details id="org-group-history-card" class="ref-accordion" style="display: none; margin-bottom: 16px;">
+            <summary class="ref-accordion-summary" style="padding: 12px 16px; font-size: 0.95rem;">
+              <span>📌 Sesiones Grupales Guardadas (<span id="org-group-history-count">0</span>) — Continuar o Reforzar</span>
+            </summary>
+            <div class="ref-accordion-body" style="padding: 12px;">
+              <div id="org-group-history-list"></div>
+            </div>
+          </details>
 
           <div class="step-card">
             <div class="step-title"><span class="step-number">1</span> Escoge el Documento para Nueva Sesión</div>
@@ -108,15 +113,15 @@
             </div>
 
             <!-- RANGO CORRELATIVO MANUAL PARA EL ORGANIZADOR -->
-            <div id="grp-rango-box" class="form-group" style="background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 12px;">
+            <div id="grp-rango-box" class="form-group" style="background: var(--primary-soft); border: 1.5px solid var(--primary-border); border-radius: var(--radius-md); padding: 12px;">
               <label style="color: var(--primary); margin-bottom: 8px;">📍 Rango correlativo manual (Opcional — Ej. continuar de la 21 a la 50)</label>
               <div class="config-grid-2" style="margin-top: 0;">
                 <div>
-                  <label for="grp-desde-num" style="font-size: 0.78rem;">Desde la pregunta N°:</label>
+                  <label for="grp-desde-num" style="font-size: 0.8rem;">Desde la pregunta N°:</label>
                   <input type="number" id="grp-desde-num" class="form-input" min="1" placeholder="Ej. 21 (vacío = 1)">
                 </div>
                 <div>
-                  <label for="grp-hasta-num" style="font-size: 0.78rem;">Hasta la pregunta N°:</label>
+                  <label for="grp-hasta-num" style="font-size: 0.8rem;">Hasta la pregunta N°:</label>
                   <input type="number" id="grp-hasta-num" class="form-input" min="1" placeholder="Ej. 50 (vacío = final)">
                 </div>
               </div>
@@ -163,18 +168,22 @@
           </button>
         </div>
 
-        <!-- MENSAJE DE ESPERA PARA PARTICIPANTES + HISTORIAL GRUPAL -->
+        <!-- MENSAJE DE ESPERA PARA PARTICIPANTES + HISTORIAL GRUPAL EN ACORDEÓN -->
         <div id="participant-wait-panel" style="display: none;">
           <div class="step-card" style="text-align: center;">
             <h3 style="color: var(--primary); margin-bottom: 6px;">Esperando al Organizador...</h3>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">
+            <p style="color: var(--text-secondary); font-size: 0.9rem;">
               Ya estás conectado en la sala. Tu pantalla cambiará automáticamente cuando inicie la sesión.
             </p>
           </div>
-          <div id="part-group-history-card" class="step-card" style="display: none;">
-            <div class="step-title">📋 Historial de Sesiones del Grupo</div>
-            <div id="part-group-history-list"></div>
-          </div>
+          <details id="part-group-history-card" class="ref-accordion" style="display: none;">
+            <summary class="ref-accordion-summary" style="padding: 12px 16px; font-size: 0.95rem;">
+              <span>📋 Historial de Sesiones del Grupo (<span id="part-group-history-count">0</span>)</span>
+            </summary>
+            <div class="ref-accordion-body" style="padding: 12px;">
+              <div id="part-group-history-list"></div>
+            </div>
+          </details>
         </div>
       </div>
 
@@ -214,7 +223,7 @@
           </div>
 
           <div class="step-card">
-            <div class="step-title" style="font-size: 0.9rem;">Estado de lectura del grupo</div>
+            <div class="step-title" style="font-size: 0.92rem;">Estado de lectura del grupo</div>
             <div id="reading-status-list" class="participants-list"></div>
             <div id="org-reading-controls" class="org-controls" style="display: none;">
               <button class="btn-main btn-warning" onclick="enviarComandoOrg('FORZAR_PREGUNTA')">
@@ -293,7 +302,7 @@
                 Lanzar Siguiente Referencia de Estudio →
               </button>
             </div>
-            <div id="part-next-wait" style="text-align: center; color: var(--text-muted); font-size: 0.88rem; display: none;">
+            <div id="part-next-wait" style="text-align: center; color: var(--text-secondary); font-size: 0.9rem; font-weight: 600; display: none;">
               Esperando a que el organizador lance la siguiente referencia de estudio...
             </div>
           </div>
@@ -304,7 +313,7 @@
       <div id="final-screen" style="display: none;">
         <div class="step-card" style="text-align: center;">
           <h2 style="color: var(--primary); margin-bottom: 6px;">¡Estudio Grupal Finalizado!</h2>
-          <p style="color: var(--text-muted); margin-bottom: 16px;">Tabla de posiciones final acumulada</p>
+          <p style="color: var(--text-secondary); margin-bottom: 16px;">Tabla de posiciones final acumulada</p>
           
           <div class="table-responsive">
             <table class="group-results-table">
@@ -333,10 +342,15 @@
     <!-- ========================================================= -->
     <section id="individual-mode-container" style="display: none;">
       <div id="ind-setup-screen">
-        <div id="ind-history-card" class="step-card" style="display: none;">
-          <div class="step-title">📌 Tu Rastro de Estudio (Continuar o Reforzar Falladas)</div>
-          <div id="ind-history-list"></div>
-        </div>
+        <!-- HISTORIAL INDIVIDUAL EN ACORDEÓN COMPACTO -->
+        <details id="ind-history-card" class="ref-accordion" style="display: none; margin-bottom: 16px;">
+          <summary class="ref-accordion-summary" style="padding: 12px 16px; font-size: 0.95rem;">
+            <span>📌 Tu Rastro de Estudio (<span id="ind-history-count">0</span>) — Continuar o Reforzar Falladas</span>
+          </summary>
+          <div class="ref-accordion-body" style="padding: 12px;">
+            <div id="ind-history-list"></div>
+          </div>
+        </details>
 
         <div class="step-card">
           <div class="step-title">
@@ -368,15 +382,15 @@
           </div>
 
           <!-- RANGO CORRELATIVO MANUAL PARA ESTUDIO INDIVIDUAL -->
-          <div id="ind-rango-box" class="form-group" style="background: var(--primary-soft); border: 1px solid var(--primary-border); border-radius: var(--radius-md); padding: 12px;">
+          <div id="ind-rango-box" class="form-group" style="background: var(--primary-soft); border: 1.5px solid var(--primary-border); border-radius: var(--radius-md); padding: 12px;">
             <label style="color: var(--primary); margin-bottom: 8px;">📍 Rango correlativo manual (Opcional — Ej. continuar de la 21 a la 50)</label>
             <div class="config-grid-2" style="margin-top: 0;">
               <div>
-                <label for="ind-desde-num" style="font-size: 0.78rem;">Desde la pregunta N°:</label>
+                <label for="ind-desde-num" style="font-size: 0.8rem;">Desde la pregunta N°:</label>
                 <input type="number" id="ind-desde-num" class="form-input" min="1" placeholder="Ej. 21 (vacío = 1)">
               </div>
               <div>
-                <label for="ind-hasta-num" style="font-size: 0.78rem;">Hasta la pregunta N°:</label>
+                <label for="ind-hasta-num" style="font-size: 0.8rem;">Hasta la pregunta N°:</label>
                 <input type="number" id="ind-hasta-num" class="form-input" min="1" placeholder="Ej. 50 (vacío = final)">
               </div>
             </div>
@@ -418,7 +432,7 @@
         </button>
       </div>
 
-      <div id="ind-loading-screen" style="display: none; text-align: center; padding: 48px 16px; color: var(--text-muted); font-weight: 700;">
+      <div id="ind-loading-screen" style="display: none; text-align: center; padding: 48px 16px; color: var(--text-secondary); font-weight: 700;">
         Preparando tus preguntas y sincronizando tu historial...
       </div>
 
@@ -474,24 +488,24 @@
 
       <div id="ind-results-screen" style="display: none; text-align: center; padding: 14px 0;">
         <h2 style="font-size: 1.4rem; color: var(--text-main); margin-bottom: 6px;">¡Sesión Individual Finalizada!</h2>
-        <p id="ind-res-subtitulo" style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 18px;"></p>
+        <p id="ind-res-subtitulo" style="color: var(--text-secondary); font-size: 0.92rem; font-weight: 600; margin-bottom: 18px;"></p>
         
         <div class="results-score-circle">
           <span class="results-score-num" id="ind-res-porcentaje">0%</span>
-          <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 700;">EFECTIVIDAD</span>
+          <span style="font-size: 0.75rem; color: var(--text-secondary); font-weight: 800;">EFECTIVIDAD</span>
         </div>
 
         <div class="stats-summary-row">
           <div class="stat-pill">
-            <span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">CORRECTAS</span>
+            <span style="display: block; font-size: 0.72rem; color: var(--text-secondary); font-weight: 800;">CORRECTAS</span>
             <span style="font-size: 1.35rem; font-weight: 800; color: var(--success);" id="ind-res-correctas">0</span>
           </div>
           <div class="stat-pill">
-            <span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">INCORRECTAS</span>
+            <span style="display: block; font-size: 0.72rem; color: var(--text-secondary); font-weight: 800;">INCORRECTAS</span>
             <span style="font-size: 1.35rem; font-weight: 800; color: var(--danger);" id="ind-res-incorrectas">0</span>
           </div>
           <div class="stat-pill">
-            <span style="display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 800;">TIEMPO USADO</span>
+            <span style="display: block; font-size: 0.72rem; color: var(--text-secondary); font-weight: 800;">TIEMPO USADO</span>
             <span style="font-size: 1.35rem; font-weight: 800; color: var(--text-main);" id="ind-res-tiempo">00:00</span>
           </div>
         </div>
